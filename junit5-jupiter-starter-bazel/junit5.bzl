@@ -1,6 +1,7 @@
 """External dependencies & java_junit5_test rule"""
 
 load("@bazel_tools//tools/build_defs/repo:jvm.bzl", "jvm_maven_import_external")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
 
 JUNIT_JUPITER_GROUP_ID = "org.junit.jupiter"
 JUNIT_JUPITER_ARTIFACT_ID_LIST = [
@@ -99,6 +100,44 @@ def java_junit5_test(name, srcs, test_package, deps = [], runtime_deps = [], **k
         ],
         **kwargs
     )
+
+def kt_jvm_junit5_test(name, srcs, test_package, deps = [], runtime_deps = [], **kwargs):
+     FILTER_KWARGS = [
+         "main_class",
+         "use_testrunner",
+         "args",
+     ]
+
+     for arg in FILTER_KWARGS:
+         if arg in kwargs.keys():
+             kwargs.pop(arg)
+
+     junit_console_args = []
+     if test_package:
+         junit_console_args += ["--select-package", test_package]
+     else:
+         fail("must specify 'test_package'")
+
+     kt_jvm_test(
+         name = name,
+         srcs = srcs,
+         main_class = "org.junit.platform.console.ConsoleLauncher",
+         args = junit_console_args,
+         deps = deps + [
+             _format_maven_jar_dep_name(JUNIT_JUPITER_GROUP_ID, artifact_id)
+             for artifact_id in JUNIT_JUPITER_ARTIFACT_ID_LIST
+         ] + [
+             _format_maven_jar_dep_name(JUNIT_PLATFORM_GROUP_ID, "junit-platform-suite-api"),
+         ] + [
+             _format_maven_jar_dep_name(t[0], t[1])
+             for t in JUNIT_EXTRA_DEPENDENCIES
+         ],
+         runtime_deps = runtime_deps + [
+             _format_maven_jar_dep_name(JUNIT_PLATFORM_GROUP_ID, artifact_id)
+             for artifact_id in JUNIT_PLATFORM_ARTIFACT_ID_LIST
+         ],
+         **kwargs
+     )
 
 def _format_maven_jar_name(group_id, artifact_id):
     return ("%s_%s" % (group_id, artifact_id)).replace(".", "_").replace("-", "_")
