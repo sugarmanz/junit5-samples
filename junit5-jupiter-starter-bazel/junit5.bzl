@@ -94,7 +94,7 @@ def java_junit5_test(name, srcs, test_package, deps = [], runtime_deps = [], **k
             _format_maven_jar_dep_name(t[0], t[1])
             for t in JUNIT_EXTRA_DEPENDENCIES
         ],
-        runtime_deps = runtime_deps + [
+        runtime_deps = (runtime_deps if runtime_deps else []) + [
             _format_maven_jar_dep_name(JUNIT_PLATFORM_GROUP_ID, artifact_id)
             for artifact_id in JUNIT_PLATFORM_ARTIFACT_ID_LIST
         ],
@@ -132,7 +132,7 @@ def kt_jvm_junit5_test(name, srcs, test_package, deps = [], runtime_deps = [], *
              _format_maven_jar_dep_name(t[0], t[1])
              for t in JUNIT_EXTRA_DEPENDENCIES
          ],
-         runtime_deps = runtime_deps + [
+         runtime_deps = (runtime_deps if runtime_deps else []) + [
              _format_maven_jar_dep_name(JUNIT_PLATFORM_GROUP_ID, artifact_id)
              for artifact_id in JUNIT_PLATFORM_ARTIFACT_ID_LIST
          ],
